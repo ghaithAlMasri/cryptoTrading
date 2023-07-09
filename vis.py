@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import datetime as dt
-from clean_data import cleandata
+from Clean_data import Cleandata
 from pandas.plotting import register_matplotlib_converters
 
 
@@ -11,7 +11,7 @@ class visualize:
     def __init__(self,name) -> None:
         register_matplotlib_converters()
         plt.style.use('ggplot')
-        self.df = cleandata(f'/Users/ghaithalmasri/Desktop/fullstackroad/{name}.csv', 'BTCUSDT').retdf()
+        self.df = Cleandata(f'/Users/ghaithalmasri/Desktop/fullstackroad/{name}.csv', 'BTCUSDT').retdf()
         self.df['time'] = pd.to_datetime(self.df['time'])
 
 
@@ -24,3 +24,5 @@ class visualize:
 
 
 trial = visualize('BTCUSDT').vis()
+
+
