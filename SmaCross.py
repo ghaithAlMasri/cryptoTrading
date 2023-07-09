@@ -13,7 +13,7 @@ class MovingAverageStrategy(BackTestSA):
 
     def generate_signals(self):
 
-        df = self.DGMT.df
+        df = self.dmgt.df
 
         df['ma_20'] = df.close.rolling(20).mean()
         df['ma_50'] = df.close.rolling(50).mean()
@@ -25,15 +25,15 @@ class MovingAverageStrategy(BackTestSA):
 
         df['entry'] = df.longs + df.shorts
 
-        self.DGMT.df = df
+        self.dmgt.df = df
 
 
     def show_performace(self):
-        rets = np.array(self.DGMT.df.returns)
+        rets = np.array(self.dmgt.df.returns)
 
         cum_rets = rets.cumsum()
 
-        plt.plot(self.DGMT.df.index, cum_rets)
+        plt.plot(self.dmgt.df.index, cum_rets)
         plt.title('Cumulative sum vs Time')
         plt.xlabel('Time')
         plt.ylabel('Cumulative sum')
@@ -43,11 +43,12 @@ class MovingAverageStrategy(BackTestSA):
 
 if __name__ == '__main__':
 
-    max_holding = 2
+    max_holding = 10
 
     m = MovingAverageStrategy('../BTCUSDT.csv', 'time', max_holding)
 
-    m.DGMT.recreate_df('1d')
+    m.dmgt.recreate_df('10min')
+    print(m.dmgt.df.tail())
 
     m.run_backtest()
     m.show_performace()

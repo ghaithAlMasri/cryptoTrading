@@ -11,10 +11,10 @@ class DGMT:
         self.df = self.data.copy()
 
     def recreate_df(self, new_timeframe):
-        agg_df = {'volume': 'sum', 'open': 'first',
+        agg_df = {'open': 'first',
                          'low': 'min', 'high': 'max',
                          'close': 'last',
-                         't_plus': 'last'}
+                         'volume': 'sum', 't_plus': 'last'}
 
         self.df = self.data.resample(new_timeframe).agg(agg_df)
         self.timeframe = new_timeframe
