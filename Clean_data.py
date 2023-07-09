@@ -16,3 +16,10 @@ class Cleandata:
         self.df = self.df.drop(columns='Unnamed: 0')
         self.df.time = pd.to_datetime(self.df.time)
         return self.df
+
+
+m = Cleandata('/Users/ghaithalmasri/Desktop/fullstackroad/ETHUSDT.csv','ETHCLEANED')
+
+
+
+m.clean()

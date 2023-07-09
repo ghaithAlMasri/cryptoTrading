@@ -14,7 +14,7 @@ class BackTestSA:
     timestamp: date
     '''
 
-    def __init__(self, csv_path, date_col, max_holding):
+    def __init__(self, csv_path, date_col, max_holding , ub_mult = 1.005, lb_mult = 0.995):
 
         self.dmgt = DGMT(csv_path, date_col)
 
@@ -29,8 +29,8 @@ class BackTestSA:
         self.max_holding_limit = max_holding
 
         # barrier multipliers
-        self.ub_mult = 1.005
-        self.lb_mult = 0.995
+        self.ub_mult = ub_mult
+        self.lb_mult = lb_mult
 
         # special case of vertical barrier
         self.end_date = self.dmgt.df.index.values[-1]
@@ -163,3 +163,15 @@ class BackTestSA:
                 self.add_zeros()
 
         self.add_trade_cols()
+
+    def show_performance(self):
+        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        print(f'initial acc: $100')
+        print(f'total pnl: {self.dmgt.df.returns.cumsum().values[-1]}')
+        print(f'acc final: ${(self.dmgt.df.returns.cumsum().values[-1] ) * 100}')
+        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+
+        
+        plt.figure()
+        plt.plot(self.dmgt.df.index, self.dmgt.df.returns.cumsum())
+        plt.show()
