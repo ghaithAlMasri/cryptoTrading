@@ -166,12 +166,13 @@ class BackTestSA:
 
     def show_performance(self):
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        print(f'total trades: {abs(self.dmgt.df.direction).sum()}')
         print(f'initial acc: $100')
         print(f'total pnl: {self.dmgt.df.returns.cumsum().values[-1]}')
-        print(f'acc final: ${(self.dmgt.df.returns.cumsum().values[-1] ) * 100}')
+        print(f'acc final: ${( (self.dmgt.df.returns.cumsum().values[-1] + 1)) * 100}')
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
-        
-        plt.figure()
-        plt.plot(self.dmgt.df.index, self.dmgt.df.returns.cumsum())
-        plt.show()
+        # plt.style.use('ggplot')
+        # plt.figure()
+        # plt.plot(self.dmgt.df.index, self.dmgt.df.returns.cumsum())
+        # plt.show()
