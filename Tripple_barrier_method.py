@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 from Datamanager.DGMT import DGMT
 
 
-
-
 class BackTestSA:
     '''
     backtesting class for all single asset strategies,
@@ -14,7 +12,7 @@ class BackTestSA:
     timestamp: date
     '''
 
-    def __init__(self, csv_path, date_col, max_holding , ub_mult = 1.005, lb_mult = 0.995):
+    def __init__(self, csv_path, date_col, max_holding, ub_mult = 1.005, lb_mult=0.995):
 
         self.dmgt = DGMT(csv_path, date_col)
 
@@ -38,6 +36,7 @@ class BackTestSA:
         self.returns_series = []
         self.holding_series = []
         self.direction_series = []
+
 
     def open_long(self, price):
         '''
@@ -80,6 +79,8 @@ class BackTestSA:
         self.returns_series.append(0)
         self.holding_series.append(0)
         self.direction_series.append(0)
+
+
 
 
     def close_position(self, price):
@@ -144,6 +145,7 @@ class BackTestSA:
         self.holding_series = []
         self.direction_series = []
 
+
     def run_backtest(self):
         # signals generated from child class
         self.generate_signals()
@@ -164,15 +166,28 @@ class BackTestSA:
 
         self.add_trade_cols()
 
+
     def show_performance(self):
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         print(f'total trades: {abs(self.dmgt.df.direction).sum()}')
         print(f'initial acc: $100')
         print(f'total pnl: {self.dmgt.df.returns.cumsum().values[-1]}')
-        print(f'acc final: ${( (self.dmgt.df.returns.cumsum().values[-1] + 1)) * 100}')
+        print(f'acc final: ${( self.dmgt.df.returns.cumsum().values[-1]  * 100 ) +100}')
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
-        # plt.style.use('ggplot')
-        # plt.figure()
-        # plt.plot(self.dmgt.df.index, self.dmgt.df.returns.cumsum())
+        plt.style.use('ggplot')
+        plt.figure()
+        plt.plot(self.dmgt.df.index, self.dmgt.df.returns.cumsum())
+        plt.show()
+
+        # fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+
+        # # Plot on the top subplot
+        # ax1.plot(self.dmgt.df.index, self.dmgt.df.returns.cumsum())
+
+        # # Plot on the bottom subplot
+        # ax2.plot(self.dmgt.df.index, self.dmgt.df.close, c='blue')
+
         # plt.show()
+
+        

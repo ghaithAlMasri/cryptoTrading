@@ -84,29 +84,29 @@ class RsiEma(BackTestSA):
                 self.add_zeros()
 
         self.add_trade_cols()
+    
+    def save_backtest(self, instrument):
+        '''
+
+        :param instrument: ETH, BTC for Ethereum and Bitcoin
+        saves backtest to our backtests folder
+        '''
+        strat_name = self.__class__.__name__
+        tf = self.dmgt.timeframe
+        self.dmgt.df.to_csv(f"data/backtests/{strat_name}_{tf}-{instrument}.csv")
 
 
 
 
 
 if __name__ == "__main__":
-    r = RsiEma('../BTCUSDT.csv','time', max_holding= 12, rsi_window= 14, rsi_long=30, rsi_short=70,
+    r = RsiEma('../ETHUSDT.csv','time', max_holding= 12, rsi_window= 14, rsi_long=30, rsi_short=70,
               ma_long=200, ma_short=50, ub_mult=1.01, lb_mult=0.99)
-    r.dmgt.recreate_df('15min')
+    r.dmgt.change_resolution('15min')
     r.generate_signals()
     r.run_backtest()
     r.show_performance()
 
-
+    r.save_backtest('ETH')
 
    
-
-
-    plt.style.use('ggplot')
-    plt.figure()
-    plt.plot(r.dmgt.df.index,r.dmgt.df.returns.cumsum())
-    plt.title('Cumulative sum vs Time')
-    plt.xlabel('Time')
-    plt.ylabel('Cumulative sum')
-    plt.legend()
-    plt.show()
