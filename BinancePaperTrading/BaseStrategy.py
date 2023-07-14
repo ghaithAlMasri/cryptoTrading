@@ -1,22 +1,22 @@
-from connect import DeribitWS
+
 import pandas as pd
 import numpy as np
 from datetime import datetime as dt
-import json
+from BinanceConnect import BinanceLive
+
 
 
 class BaseStrategy:
     def __init__(self, client_id, client_secret, instrument_name, max_holding, ub_mult
-                 ,lb_mult, timeframe, trade_capital) -> None:
+                 ,lb_mult, timeframe, duration) -> None:
         
 
         self.client_id = client_id
         self.cllient_secret = client_secret
 
-        self.derbit = DeribitWS(self.client_id,self.cllient_secret, live=False)
+        self.binance = BinanceLive(client_id= client_id, client_secret=client_secret, duration=duration, timeframe=timeframe, symbol=instrument_name)
         self.instrument = instrument_name
         self.timeframe = timeframe
-        self.trade_capital = trade_capital
         
         self.open_pos = False
         self.entry_price = None
@@ -30,7 +30,6 @@ class BaseStrategy:
 
         self.max_holding = max_holding
         self.max_holding_limit = max_holding
-        self.fees = 0
 
         self.ub_mult = ub_mult
         self.lb_mult = lb_mult
@@ -41,7 +40,6 @@ class BaseStrategy:
             "close_timestamp":[],
             "open":[],
             "close":[],
-            "fees":[],
             "direction":[],
             "gain":[]
         }
@@ -60,32 +58,32 @@ class BaseStrategy:
         return now
     
     def open_long(self):
-        response = self.derbit.market_order(self.instrument, self.trade_capital, "long")
+        response = self.binance.market_order('long')
         self.open_pos = True
         self.direction = 1
+        information = self.binance.get_open_positions()
         try:
-            self.open_price = response["result"]["order"]["average_price"]
+            self.open_price = float(information[-1].get('entryPrice'))
             self.trades["open_timestamp"].append(dt.now())
-            self.target_price = response["result"]["order"]["average_price"] * self.ub_mult
-            self.stop_price = response["result"]["order"]["average_price"] * self.lb_mult
-            self.entry_price = response["result"]["order"]["average_price"]
+            self.target_price = float(information[-1].get('entryPrice')) * self.ub_mult
+            self.stop_price = float(information[-1].get('entryPrice')) * self.lb_mult
+            self.entry_price = float(information[-1].get('entryPrice'))
             self.trades["open"].append(self.open_price)
-            self.fees += response["result"]["order"]["commission"]
         except Exception as e:
             print("ERR IN JSON FOR OPEN_LONG METHOD IN BaseStrategy.py: ", e)
 
     def open_short(self):
-        response = self.derbit.market_order(self.instrument, self.trade_capital, "short")
+        response = self.binance.market_order(self.instrument, self.trade_capital, "short")
         self.open_pos = True
         self.direction = -1
+        information = self.binance.get_open_positions()
         try:
-            self.open_price = response["result"]["order"]["average_price"]
+            self.open_price = float(information[-1].get('entryPrice'))
             self.trades["open_timestamp"].append(dt.now())
-            self.target_price = response["result"]["order"]["average_price"] * self.lb_mult
-            self.stop_price = response["result"]["order"]["average_price"] * self.ub_mult
-            self.entry_price = response["result"]["order"]["average_price"]
-            self.trades["open"].append(response["result"]["order"]["average_price"])
-            self.fees += response["result"]["order"]["commission"]
+            self.target_price = float(information[-1].get('entryPrice')) * self.lb_mult
+            self.stop_price = float(information[-1].get('entryPrice')) * self.ub_mult
+            self.entry_price = float(information[-1].get('entryPrice'))
+            self.trades["open"].append(float(information[-1].get('entryPrice')))
         except Exception as e:
             print("ERR IN JSON FOR OPEN_LONG METHOD IN BaseStrategy.py: ", e)
 
@@ -95,7 +93,6 @@ class BaseStrategy:
         self.target_price = None
         self.stop_price = None
         self.direction = None
-        self.fees = 0
         self.open_price = None
         self.max_holding = self.max_holding_limit
         self.close_price = None
@@ -103,22 +100,20 @@ class BaseStrategy:
 
     def close_pos(self):
         print("Closing Position...")
-        response = self.derbit.close_position(self.instrument)
-        # try:
-        self.close_price = response["result"]["order"]["average_price"]
-        self.trades["close_timestamp"].append(dt.now())
-        self.trades["close"].append(self.close_price)
-        self.fees += response["result"]["order"]["commission"]
-        self.trades["fees"].append(self.fees)
-        self.trades["direction"].append(self.direction)
-        gain = round(((self.close_price-self.open_price)/self.open_price)* self.direction * 100, 4)
-        self.trades["gain"].append(gain)
-        print(f"""
-                Closing position of direction {self.direction},\n
-                for a pnl of a {gain}% 
-                """)
-        # except Exception as e:
-        #     print("ERR IN JSON FOR CLOSE_POS METHOD IN BaseStrategy.py: ", e)
+        response = self.binance.close_position()
+        try:
+            self.close_price = self.binance.get_last_price()
+            self.trades["close_timestamp"].append(dt.now())
+            self.trades["close"].append(self.close_price)
+            self.trades["direction"].append(self.direction)
+            gain = round(((self.close_price-self.open_price)/self.open_price)* self.direction * 100, 4)
+            self.trades["gain"].append(gain)
+            print(f"""
+                    Closing position of direction {self.direction},\n
+                    for a pnl of a {gain}% 
+                    """)
+        except Exception as e:
+            print("ERR IN JSON FOR CLOSE_POS METHOD IN BaseStrategy.py: ", e)
 
         self.reset_vars()
 
