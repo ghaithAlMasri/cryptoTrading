@@ -28,7 +28,7 @@ class PolynomialRegression(BaseStrategy):
         self.n = n
         self.duration = duration
 
-
+        self.data_to_save = {"time":dt.now(),"pred":None,"last":None}
         self.entry_mask = entry_mask
         self.delta = 60_000 * 500
 
@@ -50,11 +50,15 @@ class PolynomialRegression(BaseStrategy):
         betas = np.linalg.inv(X.T @ X) @ X.T @ y
         new_vals = np.array([1, t[-1] + self.n, (t[-1] + self.n) ** 2])
         pred = new_vals @ betas
-        print(f"pred: {int(pred)}, last: {int(y[-1])}")
-
-        if (pred / y[-1] - 1) > self.entry_mask:
+        print(f"pred: {int(pred[-1])}, last: {int(y[-1][0])}")
+        self.data_to_save.update({
+                        "time":dt.now(),
+                        "pred":int(pred[-1]),
+                        "last": y[-1][0]
+                        })
+        if (pred[-1] / y[-1][0] - 1) > self.entry_mask:
             return 1
-        elif (pred / y[-1] - 1) < -self.entry_mask:
+        elif (pred[-1] / y[-1][0] - 1) < -self.entry_mask:
             return -1
         else:
             return 0
@@ -74,38 +78,44 @@ class PolynomialRegression(BaseStrategy):
     def run_backtest(self, endtime):
         print(f"started strategy at {dt.now()}")
         while True:
-                timenow = dt.now()
-                if not timenow.second == 0:
-                    err = True
-                    while err == True:
-                        try:
-                            print('Checking...')
-                            print(timenow)
-                            t = time.time()
-                            good_call, data = self.get_data()
-                            if not good_call:
-                                time.sleep(1)
-                                continue
-                            last_price = data.close.values[-1]
-                            signal = self.generate_signals(data)
+            timenow = dt.now()
 
-                            if signal == 1 and self.open_pos is False:
-                                self.open_long()
-                                print(f"took {time.time()-t} seconds to execute")
-                            elif signal == -1 and self.open_pos is False:
-                                self.open_short()
-                                print(f"took {time.time() - t} seconds to execute")
-                            elif self.open_pos:
-                                self.monitor_position(last_price)
-                            else:
-                                pass
-                            err = False
-                            time.sleep(60)
+            data = self.data_to_save
+            df = pd.DataFrame(data, index=["time"])
 
-                        except Exception as e:
-                            err = True
-                            print('ERR: ', e)
-                            time.sleep(5)
+
+            df.to_csv('current_time_ETH.csv', index=False)
+            if timenow.minute==0 and timenow.second == 0:
+                err = True
+                while err == True:
+                    try:
+                        print('Checking...')
+                        print(timenow)
+                        t = time.time()
+                        good_call, data = self.get_data()
+                        if not good_call:
+                            time.sleep(1)
+                            continue
+                        last_price = data.close.values[-1]
+                        signal = self.generate_signals(data)
+
+                        if signal == 1 and self.open_pos is False:
+                            self.open_long()
+                            print(f"took {time.time()-t} seconds to execute")
+                        elif signal == -1 and self.open_pos is False:
+                            self.open_short()
+                            print(f"took {time.time() - t} seconds to execute")
+                        elif self.open_pos:
+                            self.monitor_position(last_price)
+                        else:
+                            pass
+                        err = False
+                        time.sleep(60)
+
+                    except Exception as e:
+                        err = True
+                        print('ERR: ', e)
+                        time.sleep(5)
 
                 time.sleep(1)
 
@@ -118,17 +128,18 @@ class PolynomialRegression(BaseStrategy):
 
 
 if __name__ == '__main__':
-    instrument = 'BTCBUSD'
-    timeframe = '60'
+    instrument = 'ETHBUSD'
+    timeframe = '30'
     ub_mult = 1.02
     lb_mult = 0.98
-    max_holding = 12
-    entry_cond = 0.03
+    max_holding = 24
+    entry_cond = 0.05
     n = 4
-    lookback = 12
-    duration = '1 day ago UTC'
+    lookback = 48
+    duration = '3 days ago UTC'
 
-    strat = PolynomialRegression(client_id = client_id, client_secret = client_secret, instrument_name = instrument, timeframe = timeframe,
+    strat = PolynomialRegression(client_id = client_id, client_secret = client_secret, instrument_name = instrument, 
+                                 timeframe=timeframe,
                      max_holding = max_holding, ub_mult = ub_mult, lb_mult = lb_mult, 
                      entry_mask = entry_cond, lookback = lookback, n = n, duration = duration)
 

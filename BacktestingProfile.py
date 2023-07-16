@@ -185,7 +185,7 @@ class BacktestProfile:
 
 
 if __name__ == '__main__':
-    bt = pd.read_csv("data/backtests/PolyTrend_30min-ETH.csv") #change this to the path of your backtest
+    bt = pd.read_csv("data/backtests/Vwap_15min-BTC.csv") #change this to the path of your backtest
     freq = '15min'
     BT = BacktestProfile(bt, freq)
-    BT.show_perf("IMeanReversion_1min-ETH")
+    BT.show_perf("data/backtests/Vwap_15min-BTC.csv")

@@ -73,7 +73,7 @@ class BaseStrategy:
             print("ERR IN JSON FOR OPEN_LONG METHOD IN BaseStrategy.py: ", e)
 
     def open_short(self):
-        response = self.binance.market_order(self.instrument, self.trade_capital, "short")
+        response = self.binance.market_order("short")
         self.open_pos = True
         self.direction = -1
         information = self.binance.get_open_positions()

@@ -94,16 +94,16 @@ class PolyTrend(BackTestSA):
         strat_name = self.__class__.__name__
         tf = self.dmgt.timeframe
         self.dmgt.df.to_csv(f"data/backtests/{strat_name}_{tf}-{instrument}.csv")
-    print()
+
 
 if __name__ == '__main__':
-    csv_path = "../BTCUSDT.csv"
+    csv_path = "../ETHUSDT.csv"
     date_col = 'time'
-    max_holding = 12
-    lookback = 24
+    max_holding = 24
+    lookback = 48
     look_ahead = 4
-    long_thres = 0.03
-    short_thres = -0.03
+    long_thres = 0.05
+    short_thres = -long_thres
     ub_mult = 1.02
     lb_mult = 0.98
     long_tp = 1.02
@@ -116,9 +116,8 @@ if __name__ == '__main__':
                      short_thres, ub_mult, lb_mult, long_tp,
                      long_sl, short_tp, short_sl)
 
-    Poly.dmgt.change_resolution('60min')
-    Poly.dmgt.df = Poly.dmgt.df[10000:]
+    Poly.dmgt.change_resolution('30min')
     Poly.run_backtest()
     Poly.show_performance()
     print(abs(Poly.dmgt.df.direction).sum())
-    # Poly.save_backtest('BTC')
+    Poly.save_backtest('ETH')

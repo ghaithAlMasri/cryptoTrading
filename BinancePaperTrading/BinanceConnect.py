@@ -25,7 +25,7 @@ class BinanceLive:
 
     def get_balance(self):
         acc_balance = pd.DataFrame(self.client.futures_account_balance())
-        busd_balance = float(acc_balance[acc_balance['asset'] == 'BUSD']['balance'])
+        busd_balance = float(acc_balance.balance.iloc[-1])
         return busd_balance
 
 
@@ -135,3 +135,10 @@ class BinanceLive:
     def get_trade_fees(self):
         fee = self.client.futures_get_trade
 
+with open('BinancePaperTrading/Auth.json') as j:
+    creds = json.load(j)
+client_id = creds['client_id']
+client_secret = creds['client_secret']
+b = BinanceLive(client_id=client_id, client_secret=client_secret, duration='2 days ago UTC',timeframe='hourly', symbol='BTCBUSD')
+
+print(b.get_balance())
