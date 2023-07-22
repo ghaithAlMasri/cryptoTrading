@@ -24,3 +24,5 @@ class DGMT:
         self.df = self.data.resample(new_timeframe).agg(resample_dict)
 
         self.timeframe = new_timeframe
+
+
